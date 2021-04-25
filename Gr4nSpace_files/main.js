@@ -65,7 +65,8 @@ function scrollTop(){
 }
 window.addEventListener('scroll', scrollTop)
 
-/*==================== DARK LIGHT THEME ====================*/ 
+/*==================== DARK LIGHT THEME ====================*/
+// Deze zoekt de knop
 const themeButton = document.getElementById('theme-button')
 const darkTheme = 'dark-theme'
 /*const iconTheme = 'bx-sun'*/
@@ -75,5 +76,6 @@ const darkTheme = 'dark-theme'
 themeButton.addEventListener('click', () => {
     // Add or remove the dark / icon theme
     console.log("THEME BUTTON CLICKED")
+    // deze voegt een class toe aan de <body>, die class gebruik je in je css om kleuren enzo aan te passen voor je dark-them
     document.body.classList.toggle(darkTheme)
 })
