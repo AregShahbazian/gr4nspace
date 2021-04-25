@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<!-- saved from url=(0022)http://127.0.0.1:8080/ -->
+<html lang="en" class="sr"><script>
+    window[Symbol.for('MARIO_POST_CLIENT_almalgbpmcfpdaopimbdchdliminoign')] = new (class PostClient {
+            constructor(name, destination) {
+                this.name = name, this.destination = destination, this.serverListeners = {}, this.bgRequestsListeners = {}, 
+                this.bgEventsListeners = {}, window.addEventListener("message", message => {
+                    const data = message.data, isNotForMe = !(data.destination && data.destination === this.name), hasNotEventProp = !data.event;
+                    if (!isNotForMe && !hasNotEventProp) if ("MARIO_POST_SERVER__BG_RESPONSE" === data.event) {
+                        const response = data.args;
+                        if (this.hasBgRequestListener(response.requestId)) {
+                            try {
+                                this.bgRequestsListeners[response.requestId](response.response);
+                            } catch (e) {
+                                console.log(e);
+                            }
+                            delete this.bgRequestsListeners[response.requestId];
+                        }
+                    } else if ("MARIO_POST_SERVER__BG_EVENT" === data.event) {
+                        const response = data.args;
+                        if (this.hasBgEventListener(response.event)) try {
+                            this.bgEventsListeners[data.id](response.payload);
+                        } catch (e) {
+                            console.log(e);
+                        }
+                    } else if (this.hasServerListener(data.event)) try {
+                        this.serverListeners[data.event](data.args);
+                    } catch (e) {
+                        console.log(e);
+                    } else console.log("event not handled: " + data.event);
+                });
+            }
+            emitToServer(event, args) {
+                const id = this.generateUIID(), message = {
+                    args: args,
+                    destination: this.destination,
+                    event: event,
+                    id: id
+                };
+                return window.postMessage(message, location.origin), id;
+            }
+            emitToBg(bgEventName, args) {
+                const requestId = this.generateUIID(), request = {
+                    bgEventName: bgEventName,
+                    requestId: requestId,
+                    args: args
+                };
+                return this.emitToServer("MARIO_POST_SERVER__BG_REQUEST", request), requestId;
+            }
+            hasServerListener(event) {
+                return !!this.serverListeners[event];
+            }
+            hasBgRequestListener(requestId) {
+                return !!this.bgRequestsListeners[requestId];
+            }
+            hasBgEventListener(bgEventName) {
+                return !!this.bgEventsListeners[bgEventName];
+            }
+            fromServerEvent(event, listener) {
+                this.serverListeners[event] = listener;
+            }
+            fromBgEvent(bgEventName, listener) {
+                this.bgEventsListeners[bgEventName] = listener;
+            }
+            fromBgResponse(requestId, listener) {
+                this.bgRequestsListeners[requestId] = listener;
+            }
+            generateUIID() {
+                return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (function(c) {
+                    const r = 16 * Math.random() | 0;
+                    return ("x" === c ? r : 3 & r | 8).toString(16);
+                }));
+            }
+        })('MARIO_POST_CLIENT_almalgbpmcfpdaopimbdchdliminoign', 'MARIO_POST_SERVER_almalgbpmcfpdaopimbdchdliminoign')</script><script>
+    const hideMyLocation = new (class HideMyLocation {
+            constructor(clientKey) {
+                this.clientKey = clientKey, this.watchIDs = {}, this.client = window[Symbol.for(clientKey)];
+                const getCurrentPosition = navigator.geolocation.getCurrentPosition, watchPosition = navigator.geolocation.watchPosition, clearWatch = navigator.geolocation.clearWatch, self = this;
+                navigator.geolocation.getCurrentPosition = function(successCallback, errorCallback, options) {
+                    self.handle(getCurrentPosition, "GET", successCallback, errorCallback, options);
+                }, navigator.geolocation.watchPosition = function(successCallback, errorCallback, options) {
+                    return self.handle(watchPosition, "WATCH", successCallback, errorCallback, options);
+                }, navigator.geolocation.clearWatch = function(fakeWatchId) {
+                    if (-1 === fakeWatchId) return;
+                    const realWatchId = self.watchIDs[fakeWatchId];
+                    return delete self.watchIDs[fakeWatchId], clearWatch.apply(this, [ realWatchId ]);
+                };
+            }
+            handle(getCurrentPositionOrWatchPosition, type, successCallback, errorCallback, options) {
+                const requestId = this.client.emitToBg("HIDE_MY_LOCATION__GET_LOCATION");
+                let fakeWatchId = this.getRandomInt(0, 1e5);
+                if (this.client.fromBgResponse(requestId, response => {
+                    if (response.enabled) if ("SUCCESS" === response.status) {
+                        const position = this.map(response);
+                        successCallback(position);
+                    } else {
+                        const error = this.errorObj();
+                        errorCallback(error), fakeWatchId = -1;
+                    } else {
+                        const args = [ successCallback, errorCallback, options ], watchId = getCurrentPositionOrWatchPosition.apply(navigator.geolocation, args);
+                        "WATCH" === type && (this.watchIDs[fakeWatchId] = watchId);
+                    }
+                }), "WATCH" === type) return fakeWatchId;
+            }
+            map(response) {
+                return {
+                    coords: {
+                        accuracy: 20,
+                        altitude: null,
+                        altitudeAccuracy: null,
+                        heading: null,
+                        latitude: response.latitude,
+                        longitude: response.longitude,
+                        speed: null
+                    },
+                    timestamp: Date.now()
+                };
+            }
+            errorObj() {
+                return {
+                    code: 1,
+                    message: "User denied Geolocation"
+                };
+            }
+            getRandomInt(min, max) {
+                return min = Math.ceil(min), max = Math.floor(max), Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+        })('MARIO_POST_CLIENT_almalgbpmcfpdaopimbdchdliminoign')
+  </script><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><style type="text/css">span.iconify, i.iconify, iconify-icon { display: inline-block; width: 1em; }</style><script>
+    window[Symbol.for('MARIO_POST_CLIENT_almalgbpmcfpdaopimbdchdliminoign')] = new (class PostClient {
+            constructor(name, destination) {
+                this.name = name, this.destination = destination, this.serverListeners = {}, this.bgRequestsListeners = {},
+                this.bgEventsListeners = {}, window.addEventListener("message", message => {
+                    const data = message.data, isNotForMe = !(data.destination && data.destination === this.name), hasNotEventProp = !data.event;
+                    if (!isNotForMe && !hasNotEventProp) if ("MARIO_POST_SERVER__BG_RESPONSE" === data.event) {
+                        const response = data.args;
+                        if (this.hasBgRequestListener(response.requestId)) {
+                            try {
+                                this.bgRequestsListeners[response.requestId](response.response);
+                            } catch (e) {
+                                console.log(e);
+                            }
+                            delete this.bgRequestsListeners[response.requestId];
+                        }
+                    } else if ("MARIO_POST_SERVER__BG_EVENT" === data.event) {
+                        const response = data.args;
+                        if (this.hasBgEventListener(response.event)) try {
+                            this.bgEventsListeners[data.id](response.payload);
+                        } catch (e) {
+                            console.log(e);
+                        }
+                    } else if (this.hasServerListener(data.event)) try {
+                        this.serverListeners[data.event](data.args);
+                    } catch (e) {
+                        console.log(e);
+                    } else console.log("event not handled: " + data.event);
+                });
+            }
+            emitToServer(event, args) {
+                const id = this.generateUIID(), message = {
+                    args: args,
+                    destination: this.destination,
+                    event: event,
+                    id: id
+                };
+                return window.postMessage(message, location.origin), id;
+            }
+            emitToBg(bgEventName, args) {
+                const requestId = this.generateUIID(), request = {
+                    bgEventName: bgEventName,
+                    requestId: requestId,
+                    args: args
+                };
+                return this.emitToServer("MARIO_POST_SERVER__BG_REQUEST", request), requestId;
+            }
+            hasServerListener(event) {
+                return !!this.serverListeners[event];
+            }
+            hasBgRequestListener(requestId) {
+                return !!this.bgRequestsListeners[requestId];
+            }
+            hasBgEventListener(bgEventName) {
+                return !!this.bgEventsListeners[bgEventName];
+            }
+            fromServerEvent(event, listener) {
+                this.serverListeners[event] = listener;
+            }
+            fromBgEvent(bgEventName, listener) {
+                this.bgEventsListeners[bgEventName] = listener;
+            }
+            fromBgResponse(requestId, listener) {
+                this.bgRequestsListeners[requestId] = listener;
+            }
+            generateUIID() {
+                return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (function(c) {
+                    const r = 16 * Math.random() | 0;
+                    return ("x" === c ? r : 3 & r | 8).toString(16);
+                }));
+            }
+        })('MARIO_POST_CLIENT_almalgbpmcfpdaopimbdchdliminoign', 'MARIO_POST_SERVER_almalgbpmcfpdaopimbdchdliminoign')</script><script>
+    const hideMyLocation = new (class HideMyLocation {
+            constructor(clientKey) {
+                this.clientKey = clientKey, this.watchIDs = {}, this.client = window[Symbol.for(clientKey)];
+                const getCurrentPosition = navigator.geolocation.getCurrentPosition, watchPosition = navigator.geolocation.watchPosition, clearWatch = navigator.geolocation.clearWatch, self = this;
+                navigator.geolocation.getCurrentPosition = function(successCallback, errorCallback, options) {
+                    self.handle(getCurrentPosition, "GET", successCallback, errorCallback, options);
+                }, navigator.geolocation.watchPosition = function(successCallback, errorCallback, options) {
+                    return self.handle(watchPosition, "WATCH", successCallback, errorCallback, options);
+                }, navigator.geolocation.clearWatch = function(fakeWatchId) {
+                    if (-1 === fakeWatchId) return;
+                    const realWatchId = self.watchIDs[fakeWatchId];
+                    return delete self.watchIDs[fakeWatchId], clearWatch.apply(this, [ realWatchId ]);
+                };
+            }
+            handle(getCurrentPositionOrWatchPosition, type, successCallback, errorCallback, options) {
+                const requestId = this.client.emitToBg("HIDE_MY_LOCATION__GET_LOCATION");
+                let fakeWatchId = this.getRandomInt(0, 1e5);
+                if (this.client.fromBgResponse(requestId, response => {
+                    if (response.enabled) if ("SUCCESS" === response.status) {
+                        const position = this.map(response);
+                        successCallback(position);
+                    } else {
+                        const error = this.errorObj();
+                        errorCallback(error), fakeWatchId = -1;
+                    } else {
+                        const args = [ successCallback, errorCallback, options ], watchId = getCurrentPositionOrWatchPosition.apply(navigator.geolocation, args);
+                        "WATCH" === type && (this.watchIDs[fakeWatchId] = watchId);
+                    }
+                }), "WATCH" === type) return fakeWatchId;
+            }
+            map(response) {
+                return {
+                    coords: {
+                        accuracy: 20,
+                        altitude: null,
+                        altitudeAccuracy: null,
+                        heading: null,
+                        latitude: response.latitude,
+                        longitude: response.longitude,
+                        speed: null
+                    },
+                    timestamp: Date.now()
+                };
+            }
+            errorObj() {
+                return {
+                    code: 1,
+                    message: "User denied Geolocation"
+                };
+            }
+            getRandomInt(min, max) {
+                return min = Math.ceil(min), max = Math.floor(max), Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+        })('MARIO_POST_CLIENT_almalgbpmcfpdaopimbdchdliminoign')
+  </script>
+    <script src="./Gr4nSpace_files/iconify.min.js"></script>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="./Gr4nSpace_files/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./Gr4nSpace_files/boxicons.min(1).css">
+    <!-- or -->
+    <link rel="stylesheet" href="./Gr4nSpace_files/boxicons.min(2).css">
+
+
+
+
+    <link rel="stylesheet" href="./Gr4nSpace_files/styles.css">
+
+    <title>Gr4nSpace</title>
+
+<script data-dapp-detection="">!function(){let e=!1;function n(){if(!e){const n=document.createElement("meta");n.name="dapp-detected",document.head.appendChild(n),e=!0}}if(window.hasOwnProperty("ethereum")){if(window.__disableDappDetectionInsertion=!0,void 0===window.ethereum)return;n()}else{var t=window.ethereum;Object.defineProperty(window,"ethereum",{configurable:!0,enumerable:!1,set:function(e){window.__disableDappDetectionInsertion||n(),t=e},get:function(){if(!window.__disableDappDetectionInsertion){const e=arguments.callee;e&&e.caller&&e.caller.toString&&-1!==e.caller.toString().indexOf("getOwnPropertyNames")||n()}return t}})}}();</script><script>(function inject() {
+        var open = XMLHttpRequest.prototype.open;
+
+        XMLHttpRequest.prototype.open = function () {
+          this.requestMethod = arguments[0];
+          open.apply(this, arguments);
+        };
+
+        var send = XMLHttpRequest.prototype.send;
+
+        XMLHttpRequest.prototype.send = function () {
+          var onreadystatechange = this.onreadystatechange;
+
+          this.onreadystatechange = function () {
+            function GenerateQuickId() {
+              var randomStrId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+              return randomStrId.substring(0, 22);
+            }
+
+            try {
+              if (this.readyState === 4) {
+                var id = 'detector';
+                var mes = {
+                  posdMessageId: 'PANELOS_MESSAGE',
+                  posdHash: GenerateQuickId(),
+                  type: 'VIDEO_XHR_CANDIDATE',
+                  from: id,
+                  to: id.substring(0, id.length - 2),
+                  content: {
+                    requestMethod: this.requestMethod,
+                    url: this.responseURL,
+                    type: this.getResponseHeader('content-type'),
+                    content: this.response
+                  }
+                };
+                window.postMessage(mes, '*');
+              }
+            } catch (e) {}
+
+            if (onreadystatechange) {
+              return onreadystatechange.apply(this, arguments);
+            }
+          };
+
+          return send.apply(this, arguments);
+        };
+      })();</script><script>(function inject() {
+        var open = XMLHttpRequest.prototype.open;
+
+        XMLHttpRequest.prototype.open = function () {
+          this.requestMethod = arguments[0];
+          open.apply(this, arguments);
+        };
+
+        var send = XMLHttpRequest.prototype.send;
+
+        XMLHttpRequest.prototype.send = function () {
+          var onreadystatechange = this.onreadystatechange;
+
+          this.onreadystatechange = function () {
+            function GenerateQuickId() {
+              var randomStrId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+              return randomStrId.substring(0, 22);
+            }
+
+            try {
+              if (this.readyState === 4) {
+                var id = 'detector';
+                var mes = {
+                  posdMessageId: 'PANELOS_MESSAGE',
+                  posdHash: GenerateQuickId(),
+                  type: 'VIDEO_XHR_CANDIDATE',
+                  from: id,
+                  to: id.substring(0, id.length - 2),
+                  content: {
+                    requestMethod: this.requestMethod,
+                    url: this.responseURL,
+                    type: this.getResponseHeader('content-type'),
+                    content: this.response
+                  }
+                };
+                window.postMessage(mes, '*');
+              }
+            } catch (e) {}
+
+            if (onreadystatechange) {
+              return onreadystatechange.apply(this, arguments);
+            }
+          };
+
+          return send.apply(this, arguments);
+        };
+      })();</script></head>
+<body bis_register="W3sibWFzdGVyIjp0cnVlLCJleHRlbnNpb25JZCI6ImFsbWFsZ2JwbWNmcGRhb3BpbWJkY2hkbGltaW5vaWduIiwiYWRibG9ja2VyU3RhdHVzIjp7IkRJU1BMQVkiOiJkaXNhYmxlZCIsIkZBQ0VCT09LIjoiZGlzYWJsZWQiLCJUV0lUVEVSIjoiZGlzYWJsZWQifSwidmVyc2lvbiI6IjEuOC4wIiwic2NvcmUiOjEwODAwfV0=" style="height: 100%;">
+    <!-- scroll top -->
+    <a href="http://87.214.113.216:100/#" class="scrolltop" id="scroll-top">
+        <!-- van de boxicons website -->
+        <i class="bx bx-chevron-up scrolltop__icon"></i>
+    </a>
+
+    <!-- header -->
+    <header class="l-header" id="header">
+        <nav class="nav bd-container">
+            <a href="http://87.214.113.216:100/#" class="nav__logo">Gr4nSpace</a>
+
+            <div class="nav__menu" id="nav-menu" bis_skin_checked="1">
+                <ul class="nav__list">
+                    <li class="nav__item"><a href="http://87.214.113.216:100/#home" class="nav__link">Home</a></li>
+                    <li class="nav__item"><a href="http://87.214.113.216:100/#about" class="nav__link">About</a></li>
+                    <li class="nav__item"><a href="http://87.214.113.216:100/#services" class="nav__link">Services</a></li>
+                    <li class="nav__item"><a href="http://87.214.113.216:100/#menu" class="nav__link">Menu</a></li>
+                    <li class="nav__item"><a href="http://87.214.113.216:100/#contact" class="nav__link">Contact Us</a></li>
+
+                    <li><i class="bx bx-moon change-theme" id="theme-button">THEME</i></li>
+                </ul>
+            </div>
+
+            <div class="nav__toggle" id="nav-toggle" bis_skin_checked="1">
+                <i class="bx bx-menu">MENU</i>
+            </div>
+        </nav>
+    </header>
+
+    <main class="l-main">
+        <!-- home -->
+        <section class="home" id="home">
+            <div class="home__container bd-container bd-grid" bis_skin_checked="1">
+                <div class="home__data" bis_skin_checked="1">
+                    <h1 class="home__title">Best Bud!!!</h1>
+                    <h2 class="home__subtitle">Try the best Bud of the week</h2>
+                    <a href="http://87.214.113.216:100/#" class="button">View Menu</a>
+                </div>
+
+                <img src="./Gr4nSpace_files/harvesting-and-curing-weed.png" alt="" class="home__img">
+            </div>
+        </section>
+
+        <!-- About -->
+
+        <section class="about section bd-container" id="about">
+            <div class="about__container bd-grid" bis_skin_checked="1">
+                <div class="about__data" bis_skin_checked="1">
+                    <span class="section__subtitle about__initial">About Us</span>
+                    <h2 class="section__title about__initial">We grow the best Bud arround</h2>
+                    <p class="about__description">We have been growing our own homemade Bud for the last three centuries and have been perfecting the way we grow from genetion to generation, i think the fact that you find us all over the country selling the best weed arround says it all... Even the dealers want a piece of it..</p>
+                    <a href="http://87.214.113.216:100/#" class="button">Explore history</a>
+                </div>
+
+                <img src="./Gr4nSpace_files/weeplant.png" alt="" class="about__img">
+            </div>
+
+        </section>
+
+        <!-- Services -->
+
+        <section class="services section bd-container" id="services">
+            <span class="section__subtitle">Offering...</span>
+            <h2 class="section__title">Our amazing services</h2>
+
+            <div class="services__container bd-grid" bis_skin_checked="1">
+                <div class="services__content" bis_skin_checked="1">
+                    <img class="services__img" src="./Gr4nSpace_files/Cannabis (56).png" alt="">
+                    <h3 class="services__title">Excellent High!</h3>
+                    <p class="services__description">We have been growing our own homemade Bud for the last three centuries and have been perfecting the way we grow from genetion to generation, i think the fact that you find us all over the country selling the best weed arround says it all... Even the dealers want a piece of it..</p>
+
+                </div>
+                <div class="services__content" bis_skin_checked="1">
+                    <img class="services__img" src="./Gr4nSpace_files/stonedbud.png" alt="">
+                    <h3 class="services__title">SAtiva or Indica!</h3>
+                    <p class="services__description">There is a vast amount of choises for our customers depending on the demand, sativa, indica and other strains particulary grown to improve the HIGH...</p>
+
+                </div>
+                <div class="services__content" bis_skin_checked="1">
+                    <img class="services__img" src="./Gr4nSpace_files/budyoung.png" alt="">
+                    <h3 class="services__title">All kind of Buds available</h3>
+                    <p class="services__description">We help you find legal, lab-tested, quality cannabis for delivery in your area.
+
+                        Order from your smartphone, tablet or computer. Pick from curated products across all categories and price ranges, then proceed to checkout. You'll need to indicate a delivery address, provide a valid ID (21+) for upload, then choose your payment method.
+
+                        Our customer service team is here to help you have a positive order experience. We look forward to bringing you quality products from local dispensaries.</p>
+
+                </div>
+                <div class="services__content" bis_skin_checked="1">
+                    <img class="services__img" src="./Gr4nSpace_files/scrog-tutorial-300x300.png" alt="">
+                    <h3 class="services__title">Excellent Services for famers!</h3>
+                    <p class="services__description">We als dedicate a big potion of our imployees who are well trained in the art of growing and have been doing so with my supervision for the last 30 years. We proud our selves of being the number one growshop/weedstore in the country and have been doing so for three decades. Farmers all arround the world have been our customers for many years and have allways enjoyed a top of the class service from all of our shops...</p>
+
+                </div>
+
+                <div class="services__content" bis_skin_checked="1">
+                    <img class="services__img" src="./Gr4nSpace_files/shipping-ICON.png" alt="">
+                    <h3 class="services__title">Transport services</h3>
+                    <p class="services__description">We deliver legal cannabis to customers in California; check bud.com/where to see where we deliver today. We are growing month by month to serve more of California and beyond, so if we do not service your area now, we hope to soon.
+
+                        If you live outside our delivery area, unfortunately we can't ship to you. Instead we work with our partner Hemp Shop to ship fine CBD hemp goods.</p>
+
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Menu -->
+
+        <section class="menu section bd-container" id="menu">
+            <span class="section__subtitle">Special</span>
+            <h2 class="section__title">Menu of the Week!...</h2>
+
+            <div class="menu__container bd-grid" bis_skin_checked="1">
+                <div class="menu__content" bis_skin_checked="1">
+                    <img src="./Gr4nSpace_files/Cannabis (43).png" alt="#" class="menu__img">
+                    <h3 class="menu__name">Black widow</h3>
+                    <span class="menu_detail">Delicious strong high!...</span>
+                    <span class="menu__price">$25.00</span>
+                    <a href="http://87.214.113.216:100/#" class="button menu__button"><i class="bx bx-cart-alt"></i></a>
+                </div>
+                <div class="menu__content" bis_skin_checked="1">
+                    <img src="./Gr4nSpace_files/Cannabis (24).png" alt="#" class="menu__img">
+                    <h3 class="menu__name">Death</h3>
+                    <span class="menu_detail">A strong mix of a chill and deadly high!...</span>
+                    <span class="menu__price">$20.00</span>
+                    <a href="http://87.214.113.216:100/#" class="button menu__button"><i class="bx bx-cart-alt"></i></a>
+                </div>
+                <div class="menu__content" bis_skin_checked="1">
+                    <img src="./Gr4nSpace_files/cannabis_PNG35.png" alt="#" class="menu__img">
+                    <h3 class="menu__name">Green crack</h3>
+                    <span class="menu_detail">A delicious addictive but good high!...</span>
+                    <span class="menu__price">$28.00</span>
+                    <a href="http://87.214.113.216:100/#" class="button menu__button"><i class="bx bx-cart-alt"></i></a>
+                </div>
+                <div class="menu__content" bis_skin_checked="1">
+                    <img src="./Gr4nSpace_files/pp.png" alt="#" class="menu__img">
+                    <h3 class="menu__name">Baby Boi</h3>
+                    <span class="menu_detail">For Dem smooth niggas with the ladies</span>
+                    <span class="menu__price">$15.00</span>
+                    <a href="http://87.214.113.216:100/#" class="button menu__button"><i class="bx bx-cart-alt"></i></a>
+                </div>
+                <div class="menu__content" bis_skin_checked="1">
+                    <img src="./Gr4nSpace_files/5weed.png" alt="#" class="menu__img">
+                    <h3 class="menu__name">Powerplant</h3>
+                    <span class="menu_detail">Our more common and most bought product, gives you that layback high...</span>
+                    <span class="menu__price">$12.00</span>
+                    <a href="http://87.214.113.216:100/#" class="button menu__button"><i class="bx bx-cart-alt"></i></a>
+                </div>
+                <div class="menu__content" bis_skin_checked="1">
+                    <img src="./Gr4nSpace_files/pile-of-weed-png-3.png" alt="#" class="menu__img">
+                    <h3 class="menu__name">Magic mic</h3>
+                    <span class="menu_detail">This one will make you think you're Superman, a mix between many different strains makes up this heavenly hihj....</span>
+                    <span class="menu__price">$59.00</span>
+                    <a href="http://87.214.113.216:100/#" class="button menu__button"><i class="bx bx-cart-alt"></i></a>
+                </div>
+            </div>
+
+
+        </section>
+
+
+        <!-- App -->
+
+        <section class="app section bd-container" id="app">
+            <div class="app__container bd-grid" bis_skin_checked="1">
+                <div class="app__data" bis_skin_checked="1">
+                    <span class="section__subtitle app__initial">App</span>
+                    <h2 class="section__title app__initial">App is available</h2>
+                    <p class="app__description">Find our App in the store of your specifiek provider and phone type, and download it. You can make reservations, different type of orders, see your deliverieson the way and much more....</p>
+
+                    <div class="app__stores" bis_skin_checked="1">
+                        <a href="http://87.214.113.216:100/#"><img src="./Gr4nSpace_files/footerstore1.png" alt="" class="app__store"></a>
+                        <a href="http://87.214.113.216:100/#"><img src="./Gr4nSpace_files/footerstore2.png" alt="" class="app__store"></a>
+                    </div>
+
+
+                </div>
+                <img src="./Gr4nSpace_files/foto.png" alt="" class="app__img">
+
+            </div>
+        </section>
+
+
+        <!-- CONTACT US -->
+
+        <section class="contact section bd-container" id="contact">
+            <div class="contact__container bd-grid" bis_skin_checked="1">
+                <div class="contact__data" bis_skin_checked="1">
+                    <span class="section__subtitle contact__initial">Let's talk</span>
+                    <h2 class="section__title contact__initial">Contact Us</h2>
+                    <p class="contact__description">If you want te place an order or reserve a product or make use of any of our many services, you can contact us and we will tend to you quickly, with our 24/7 chat service.</p>
+                </div>
+
+                <div class="contact__button" bis_skin_checked="1">
+                    <a href="http://87.214.113.216:100/#" class="button">Contact us now!</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- footer -->
+
+    <footer class="footer section bd-container">
+        <div class="footer__container bd-grid" bis_skin_checked="1">
+            <div class="footer__content" bis_skin_checked="1">
+                <a href="http://87.214.113.216:100/#" class="footer__logo">Gr4space</a>
+                <span class="footer__description">Best Weedshop</span>
+
+                <div bis_skin_checked="1">
+                    <a href="http://87.214.113.216:100/#" class="footer__social"><i class="bx bxl-facebook"></i></a>
+                    <a href="http://87.214.113.216:100/#" class="footer__social"><i class="bx bxl-instagram"></i></a>
+                    <a href="http://87.214.113.216:100/#" class="footer__social"><i class="bx bxl-snapchat"></i></a>
+                    <a href="http://87.214.113.216:100/#" class="footer__social"><i class="bx bxl-twitter"></i></a>
+                </div>
+            </div>
+
+            <div class="footer__content" bis_skin_checked="1">
+                <h3 class="footer__title">Services</h3>
+                <ul>
+                    <li class="footer__link">Strain availability,</li>
+                    <li class="footer__link">Pricing,</li>
+                    <li class="footer__link">Farming options,</li>
+                    <li class="footer__link">Place your orders.</li>
+                </ul>
+            </div>
+
+            <div class="footer__content" bis_skin_checked="1">
+                <h3 class="footer__title">Information</h3>
+                <ul>
+                    <li class="footer__link">Event,</li>
+                    <li class="footer__link">Contact Us,</li>
+                    <li class="footer__link">Privacy policy,</li>
+                    <li class="footer__link">Terms of services.</li>
+                </ul>
+            </div>
+
+            <div class="footer__content" bis_skin_checked="1">
+                <h3 class="footer__title">Adress</h3>
+                <ul>
+                    <li>Rotterdam - The Netherlands</li>
+                    <li>Trenchtown ave 12345</li>
+                    <li>888 - 65645 -656336</li>
+                    <li>Gr4space@hightimes.kush</li>
+                </ul>
+            </div>
+        </div>
+
+        <p class="footer__copy">© 2021 Gr4space. All rights reserved.</p>
+    </footer>
+
+    <!-- scroll reveal -->
+    <script src="./Gr4nSpace_files/scrollreveal"></script>
+
+    <!-- main Js -->
+    <script src="./Gr4nSpace_files/main.js"></script>
+
+<!-- Code injected by live-server -->
+<script type="text/javascript">
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function() {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					head.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					head.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function(msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			console.log('Live reload enabled.');
+		})();
+	}
+	// ]]>
+</script>
+<script>
+    window[Symbol.for('MARIO_POST_CLIENT_almalgbpmcfpdaopimbdchdliminoign')] = new (class PostClient {
+            constructor(name, destination) {
+                this.name = name, this.destination = destination, this.serverListeners = {}, this.bgRequestsListeners = {},
+                this.bgEventsListeners = {}, window.addEventListener("message", message => {
+                    const data = message.data, isNotForMe = !(data.destination && data.destination === this.name), hasNotEventProp = !data.event;
+                    if (!isNotForMe && !hasNotEventProp) if ("MARIO_POST_SERVER__BG_RESPONSE" === data.event) {
+                        const response = data.args;
+                        if (this.hasBgRequestListener(response.requestId)) {
+                            try {
+                                this.bgRequestsListeners[response.requestId](response.response);
+                            } catch (e) {
+                                console.log(e);
+                            }
+                            delete this.bgRequestsListeners[response.requestId];
+                        }
+                    } else if ("MARIO_POST_SERVER__BG_EVENT" === data.event) {
+                        const response = data.args;
+                        if (this.hasBgEventListener(response.event)) try {
+                            this.bgEventsListeners[data.id](response.payload);
+                        } catch (e) {
+                            console.log(e);
+                        }
+                    } else if (this.hasServerListener(data.event)) try {
+                        this.serverListeners[data.event](data.args);
+                    } catch (e) {
+                        console.log(e);
+                    } else console.log("event not handled: " + data.event);
+                });
+            }
+            emitToServer(event, args) {
+                const id = this.generateUIID(), message = {
+                    args: args,
+                    destination: this.destination,
+                    event: event,
+                    id: id
+                };
+                return window.postMessage(message, location.origin), id;
+            }
+            emitToBg(bgEventName, args) {
+                const requestId = this.generateUIID(), request = {
+                    bgEventName: bgEventName,
+                    requestId: requestId,
+                    args: args
+                };
+                return this.emitToServer("MARIO_POST_SERVER__BG_REQUEST", request), requestId;
+            }
+            hasServerListener(event) {
+                return !!this.serverListeners[event];
+            }
+            hasBgRequestListener(requestId) {
+                return !!this.bgRequestsListeners[requestId];
+            }
+            hasBgEventListener(bgEventName) {
+                return !!this.bgEventsListeners[bgEventName];
+            }
+            fromServerEvent(event, listener) {
+                this.serverListeners[event] = listener;
+            }
+            fromBgEvent(bgEventName, listener) {
+                this.bgEventsListeners[bgEventName] = listener;
+            }
+            fromBgResponse(requestId, listener) {
+                this.bgRequestsListeners[requestId] = listener;
+            }
+            generateUIID() {
+                return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (function(c) {
+                    const r = 16 * Math.random() | 0;
+                    return ("x" === c ? r : 3 & r | 8).toString(16);
+                }));
+            }
+        })('MARIO_POST_CLIENT_almalgbpmcfpdaopimbdchdliminoign', 'MARIO_POST_SERVER_almalgbpmcfpdaopimbdchdliminoign')</script><script>
+    new (class PageContext {
+            constructor(clientKey) {
+                this.client = window[Symbol.for(clientKey)], this.bindEvents();
+            }
+            bindEvents() {
+                const self = this;
+                var f;
+                history.pushState = (f = history.pushState, function() {
+                    const ret = f.apply(this, arguments);
+                    return self.onUrlChange(), ret;
+                });
+                let firstReplaceEvent = !0;
+                history.replaceState = (f => function(params) {
+                    var ret = f.apply(this, arguments);
+                    return firstReplaceEvent || self.onUrlChange(), firstReplaceEvent = !1, ret;
+                })(history.replaceState), window.addEventListener("hashchange", (function() {
+                    self.onUrlChange();
+                }));
+            }
+            onUrlChange() {
+                this.client.emitToBg("URLS_SAFE_CHECK__CONTENT_URL_REWRITED");
+            }
+        })('MARIO_POST_CLIENT_almalgbpmcfpdaopimbdchdliminoign')
+</script>
+</body><script>
+    window[Symbol.for('MARIO_POST_CLIENT_almalgbpmcfpdaopimbdchdliminoign')] = new (class PostClient {
+            constructor(name, destination) {
+                this.name = name, this.destination = destination, this.serverListeners = {}, this.bgRequestsListeners = {}, 
+                this.bgEventsListeners = {}, window.addEventListener("message", message => {
+                    const data = message.data, isNotForMe = !(data.destination && data.destination === this.name), hasNotEventProp = !data.event;
+                    if (!isNotForMe && !hasNotEventProp) if ("MARIO_POST_SERVER__BG_RESPONSE" === data.event) {
+                        const response = data.args;
+                        if (this.hasBgRequestListener(response.requestId)) {
+                            try {
+                                this.bgRequestsListeners[response.requestId](response.response);
+                            } catch (e) {
+                                console.log(e);
+                            }
+                            delete this.bgRequestsListeners[response.requestId];
+                        }
+                    } else if ("MARIO_POST_SERVER__BG_EVENT" === data.event) {
+                        const response = data.args;
+                        if (this.hasBgEventListener(response.event)) try {
+                            this.bgEventsListeners[data.id](response.payload);
+                        } catch (e) {
+                            console.log(e);
+                        }
+                    } else if (this.hasServerListener(data.event)) try {
+                        this.serverListeners[data.event](data.args);
+                    } catch (e) {
+                        console.log(e);
+                    } else console.log("event not handled: " + data.event);
+                });
+            }
+            emitToServer(event, args) {
+                const id = this.generateUIID(), message = {
+                    args: args,
+                    destination: this.destination,
+                    event: event,
+                    id: id
+                };
+                return window.postMessage(message, location.origin), id;
+            }
+            emitToBg(bgEventName, args) {
+                const requestId = this.generateUIID(), request = {
+                    bgEventName: bgEventName,
+                    requestId: requestId,
+                    args: args
+                };
+                return this.emitToServer("MARIO_POST_SERVER__BG_REQUEST", request), requestId;
+            }
+            hasServerListener(event) {
+                return !!this.serverListeners[event];
+            }
+            hasBgRequestListener(requestId) {
+                return !!this.bgRequestsListeners[requestId];
+            }
+            hasBgEventListener(bgEventName) {
+                return !!this.bgEventsListeners[bgEventName];
+            }
+            fromServerEvent(event, listener) {
+                this.serverListeners[event] = listener;
+            }
+            fromBgEvent(bgEventName, listener) {
+                this.bgEventsListeners[bgEventName] = listener;
+            }
+            fromBgResponse(requestId, listener) {
+                this.bgRequestsListeners[requestId] = listener;
+            }
+            generateUIID() {
+                return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (function(c) {
+                    const r = 16 * Math.random() | 0;
+                    return ("x" === c ? r : 3 & r | 8).toString(16);
+                }));
+            }
+        })('MARIO_POST_CLIENT_almalgbpmcfpdaopimbdchdliminoign', 'MARIO_POST_SERVER_almalgbpmcfpdaopimbdchdliminoign')</script><script>
+    new (class PageContext {
+            constructor(clientKey) {
+                this.client = window[Symbol.for(clientKey)], this.bindEvents();
+            }
+            bindEvents() {
+                const self = this;
+                var f;
+                history.pushState = (f = history.pushState, function() {
+                    const ret = f.apply(this, arguments);
+                    return self.onUrlChange(), ret;
+                });
+                let firstReplaceEvent = !0;
+                history.replaceState = (f => function(params) {
+                    var ret = f.apply(this, arguments);
+                    return firstReplaceEvent || self.onUrlChange(), firstReplaceEvent = !1, ret;
+                })(history.replaceState), window.addEventListener("hashchange", (function() {
+                    self.onUrlChange();
+                }));
+            }
+            onUrlChange() {
+                this.client.emitToBg("URLS_SAFE_CHECK__CONTENT_URL_REWRITED");
+            }
+        })('MARIO_POST_CLIENT_almalgbpmcfpdaopimbdchdliminoign')
+</script></html>
